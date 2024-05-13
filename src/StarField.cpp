@@ -3,38 +3,34 @@
 
 static const int screenWidth = 1280;
 static const int screenHeight = 1024;
+static const float zFar = 10.0;    
+static const float zNear = 0.1;    
+static const int offsetX = screenWidth / 2;
+static const int offsetY = screenHeight / 2;
+static const int numberOfStars = 300;
 
 struct Star
 {
-    Vector2 position;
-    float z; 
+    Vector3 position;
 };
 
-Vector2 getRandomVec()
+Vector3 getRandomVec()
 {
     float x = GetRandomValue(-screenWidth,screenWidth);
     float y = GetRandomValue(-screenHeight,screenHeight);
-    Vector2 res = {x,y}; 
+    float z = GetRandomValue(zNear,zFar);
+    Vector3 res = {x,y,z}; 
     return res;
 }
 
-
 int main(void)
 {
-    // Initialization
-    //--------------------------------------------------------------------------------------
-
     InitWindow(screenWidth, screenHeight, "StarField");
 
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
-                                    //--------------------------------------------------------------------------------------
-                                    //
+    SetTargetFPS(60);               
 
-    int numberOfStars = 100; 
 
-    int zNear = 10;    
-
-    Star stars[600] = {0}; 
+    Star stars[numberOfStars] = {0}; 
 
 
     for(int i = 0 ; i < numberOfStars ; i++)
@@ -42,48 +38,39 @@ int main(void)
         stars[i].position = getRandomVec();
     }
 
-
-
-
-    //
-    //
-    // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
+    while (!WindowShouldClose())    
     {
 
-
+        BeginDrawing();
         for(int i = 0 ; i < numberOfStars ; i++)
         {
-            stars[i].z += 0.2; 
-            if(stars[i].position.x < 0 || stars[i].position.y < 0 ||stars[i].position.x > screenWidth || stars[i].position.y > screenHeight || stars[i].z > zNear)
+            float z = stars[i].position.z;
+
+            z -= 0.1; // control speed
+            if(z <= zNear) 
             {
                 stars[i].position = getRandomVec();
-                stars[i].z = 0; 
+                z = stars[i].position.z;
             }
-            else
-            {
-                stars[i].position.x = (stars[i].position.x - (float)screenWidth / 2.0f) * 1.01+ (float)screenWidth / 2.0f;
-                stars[i].position.y = (stars[i].position.y - (float)screenHeight / 2.0f) * 1.01 + (float)screenHeight / 2.0f;
-            }
+
+            float x = stars[i].position.x;
+            float y = stars[i].position.y;
+
+            float dX = x / z + offsetX; 
+            float dY = y / z + offsetY; 
+
+            DrawCircle(dX,dY,5/z,WHITE);
+            stars[i].position.z = z;
 
         }
 
-
-        BeginDrawing();
-
-        for(int i = 0 ; i < numberOfStars ; i++)
-        {
-            DrawCircleV(stars[i].position,stars[i].z,WHITE);        
-        }
         ClearBackground(BLACK);
+
         EndDrawing();
-        //----------------------------------------------------------------------------------
     }
 
-    // De-Initialization
-    //--------------------------------------------------------------------------------------
     CloseWindow();        // Close window and OpenGL context
                           //--------------------------------------------------------------------------------------
 
     return 0;
-    }
+}
